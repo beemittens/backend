@@ -1,8 +1,19 @@
 const http = require('http')
 const express = require('express')
+const morgan = require('morgan')
 const app = express()
 
+morgan.token('body', (req, res) => {
+
+  if (req.method !== 'POST') {
+    return null
+  }
+
+  return JSON.stringify(req.body)
+})
+
 app.use(express.json())
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 
 let persons = [
   {
@@ -66,9 +77,12 @@ app.post('/api/persons', (request, response) => {
 
   if (!person.name || !person.number ) {
     response.json({ error: 'request body missing information' })
+    return
   }
-  else if (persons.find(p => p.name === person.name)) {
+
+  if (persons.find(p => p.name === person.name)) {
     response.json({ error: 'name must be unique' })
+    return
   }
 
   person.id = Math.floor(10000 * Math.random())
