@@ -22,7 +22,7 @@ app.use(morgan(':method :url :status :res[content-length] - :response-time ms :b
 const Person = require('./models/person')
 
 app.get('/api/info', (request, response) => {
-
+  
   Person.find({}).then(persons => {
     const nowTime = new Date()
     response.send(`<div>Phonebook has info for ${persons.length} people</div>
