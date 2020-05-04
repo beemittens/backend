@@ -4,7 +4,7 @@ const morgan = require('morgan')
 require('dotenv').config()
 const cors = require('cors')
 
-morgan.token('body', (req, res) => {
+morgan.token('body', (req) => {
 
   if (req.method !== 'POST') {
     return null
@@ -23,9 +23,11 @@ const Person = require('./models/person')
 
 app.get('/api/info', (request, response) => {
 
-  const nowTime = new Date()
-  response.send(`<div>Phonebook has info for ${persons.length} people</div>
+  Person.find({}).then(persons => {
+    const nowTime = new Date()
+    response.send(`<div>Phonebook has info for ${persons.length} people</div>
     <p>${nowTime.toString()}</p>`)
+  })
 })
 
 app.get('/api/persons', (request, response) => {
@@ -44,7 +46,7 @@ app.get('/api/persons/:id', (request, response, next) => {
 
     response.status(404).end()
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
@@ -56,15 +58,15 @@ app.put('/api/persons/:id', (request, response, next) => {
   }
 
   Person.findByIdAndUpdate(request.params.id, person, { new: true })
-    .then(updatedPerson  =>{
+    .then(updatedPerson => {
 
-      if(updatedPerson) {
+      if (updatedPerson) {
         response.json(updatedPerson.toJSON())
       } else {
         response.status(404).end()
       }
-  })
-  .catch(error => next(error))
+    })
+    .catch(error => next(error))
 
 })
 
@@ -75,19 +77,19 @@ app.post('/api/persons', (request, response, next) => {
     number: body.number
   })
 
-  person.save().then(result => {
+  person.save().then(() => {
     console.log(`added ${person.name} number ${person.number} to phonebook!`)
     response.json(person)
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 })
 
 app.delete('/api/persons/:id', (request, response, next) => {
 
-  Person.findByIdAndDelete(request.params.id).then(person =>{
+  Person.findByIdAndDelete(request.params.id).then(() => {
     response.status(204).end()
   })
-  .catch(error => next(error))
+    .catch(error => next(error))
 
 })
 
@@ -97,7 +99,7 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
-  } else if(error.name === 'ValidationError') {
+  } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message })
   }
 
@@ -113,6 +115,7 @@ const unknownEndpoint = (request, response) => {
 // olemattomien osoitteiden käsittely
 app.use(unknownEndpoint)
 
+// eslint-disable-next-line no-undef
 const PORT = process.env.PORT
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
